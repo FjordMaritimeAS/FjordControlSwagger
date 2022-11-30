@@ -1,0 +1,282 @@
+asyncapi: 2.5.0
+
+info:
+  title: Fjord Control - SignalR hubs/data
+  version: "1.0"
+servers:
+  production:
+    url: https://data.fjordcontrol.com
+    protocol: SignalR
+    description: Subscribing and unsubscribing to measurement value updates SignalR Fjord Control
+
+channels:
+  hubs/data:
+    publish:
+      operationId: sendMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/subscribe'
+          - $ref: '#/components/messages/unsubscribe'
+    subscribe:
+      message:
+        $ref: '#/components/messages/measurementUpdate'
+
+components:
+  schemas:
+    SubscriptionDto:
+      description: Collection of sites that the logged in user has access to
+      type: object
+      properties:
+        GroupName:
+          description: Specification for the subscription. format - '{DeviceTypeNo}/{DeviceId}/{MeasurementId}'
+          type: string
+        ByType:
+          description: Get measurement by type. Set to true if MeasurementId on Measurement object is null.
+          type: boolean
+    MeasurementValueDto:
+      description: Update of a measurement value
+      type: object
+      properties:
+        DeviceType:
+          $ref: '#/components/schemas/DeviceType'
+        DeviceId: 
+          description: Id of the device
+          type: number
+          format: integer
+        MeasurementId:
+          description: Id of the measurement
+          type: number
+          format: byte
+        MeasurementType:
+          description: Numeric representation of measurement type. Device type dependent and can be ignored for the app. Value should be handled according to data type, see 'DataType' schema.
+          type: number
+          format: byte
+        TimeStamp:
+          description: Timestamp for the updated measurement value
+          type: string
+          format: ISO 8601 UTC
+        Value:
+          description: Updated value
+          type: number
+          format: float
+    DeviceType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+      description: >
+        * 0 - Battery
+
+        * 1 - Engine
+
+        * 2 - PMS
+
+        * 3 - DoorSwitch 
+
+        * 4 - Generator
+
+        * 5 - GeneratorControl
+
+        * 6 - Mains
+
+        * 7 - RoomSensor
+
+        * 8 - Transformer
+
+        * 9 - Vessel
+          
+        * 10 - CoolingSystem
+          
+        * 11 - Propulsion
+          
+        * 12 - Charger
+          
+        * 13 - DcDc
+          
+        * 14 - Sterndrive
+          
+        * 15 - Maneuver
+          
+        * 16 - Busbar
+    DataType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+      description: >
+          * 0 - Boolean
+
+          * 1 - Integer
+
+          * 2 - Decimal
+
+          * 3 - String 
+
+          * 4 - OperatingMode (See spec) 
+
+          * 5 - OperationalMode (See spec)  
+
+          * 6 - KeySwitchPosition (See spec) 
+
+          * 7 - EngineStatus (See spec) 
+
+          * 8 - BatteryStatus (See spec) 
+
+          * 9 - GeneratorStatus (See spec)
+    OperatingMode:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+          * 0 - Auto
+
+          * 1 - Manual
+
+          * 2 - Stop
+    OperationalMode:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+          * 0 - Auto
+
+          * 1 - Manual
+
+          * 2 - Stop
+    KeySwitchPosition:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+          * 0 - Auto
+
+          * 1 - Intermediate
+
+          * 2 - Manual
+    EngineStatus:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+        - 14
+        - 15
+        - 16
+        - 17
+        - 18
+        - 19
+        - 20
+        - 21
+        - 22
+      description: >
+          * 0 - AbortingStopCycle
+
+          * 1 - AutoModeEngineStartVerification
+
+          * 2 - CheckForReachingOperatingConditions
+
+          * 3 - CoolingCycle 
+
+          * 4 - Crank
+
+          * 5 - DelayBetweenTwoCranks
+
+          * 6 - EngineStartAttempt
+
+          * 7 - EngineStopped
+
+          * 8 - IdleSpeed
+
+          * 9 - ManualModeEngineStartVerification
+          
+          * 10 - NotStopped
+          
+          * 11 - OpeningFuelSolenoid
+          
+          * 12 - Running
+          
+          * 13 - StandbyBetweenStartAttempts
+          
+          * 14 - Started
+          
+          * 15 - StopCycle
+          
+          * 16 - StopSequenceCompletedButEngineStillRunning
+          
+          * 17 - StopSequenceHalted
+          
+          * 18 - StopSequenceRunning
+          
+          * 19 - Stopp
+          
+          * 20 - Stopped
+          
+          * 21 - ValveOpening
+          
+          * 22 - WaitingForStop
+    GeneratorStatus:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+      description: >
+          * 0 - Running
+
+          * 1 - Stopped
+  messages:
+    subscribe:
+      payload: 
+        $ref: '#/components/schemas/SubscriptionDto'
+    unsubscribe:
+      payload: 
+        $ref: '#/components/schemas/SubscriptionDto'
+    measurementUpdate:
+      payload: 
+        $ref: '#/components/schemas/MeasurementValueDto'
