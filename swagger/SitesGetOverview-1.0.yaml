@@ -1,0 +1,66 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: Fjord Control - Sites/GetOverview
+  description: Endpoint for getting a list of sites that the user can access
+servers:
+  # Added by API Auto Mocking Plugin
+  - url: https://virtserver.swaggerhub.com/TTH_1/GetOverview/1.0
+    description: SwaggerHub API Auto Mocking
+  - url: https://api.fjordcontrol.com/v2
+    description: Fjord Control production API
+    
+paths:
+  /Sites/GetOverview:
+    get:
+      summary: Get an array of all sites the user has access to
+      responses:
+        200:
+          description: OK - Request fullfilled and a list of sites are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SitesResponse'
+        403: 
+          description: Forbidden
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+components:
+  schemas:
+    SitesResponse:
+      description: Collection of sites that the logged in user has access to
+      type: object
+      properties:
+        Sites:
+          description: Array of site objects
+          type: array
+          items:
+            $ref: '#/components/schemas/Site'
+    Site:
+      description: Information about a site entity
+      type: object
+      properties:
+        Id:
+          description:
+            Site id
+          type: number
+          format: int
+        Name:
+          description: Name of the site
+          type: string
+        Type:
+          description: Type of site
+          $ref: '#/components/schemas/EntityType'
+    EntityType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+          * 0 - Barge
+
+          * 1 - Boat
+
+          * 2 - GreenBox
