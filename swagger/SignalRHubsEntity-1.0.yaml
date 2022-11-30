@@ -1,0 +1,120 @@
+asyncapi: 2.5.0
+
+info:
+  title: Fjord Control - SignalR hubs/entity
+  version: "1.0"
+servers:
+  production:
+    url: https://data.fjordcontrol.com
+    protocol: SignalR
+    description: subscribing and unsubsctibing to measurement value updates SignalR Fjord Control
+
+channels:
+  hubs/entity:
+    publish:
+      operationId: sendMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/subscribe'
+          - $ref: '#/components/messages/unsubscribe'
+    subscribe:
+      operationId: getUpdates
+      message:
+        $ref: '#/components/messages/updates'
+
+components:
+  schemas:
+    SubscriptionDto:
+      description: Collection of sites that the logged in user has access to
+      type: object
+      properties:
+        GroupName:
+          description: Specification for the subscription. format - '{SiteType}/{SiteId}/{MeasurementType}'
+          type: string
+    MeasurementValueDto:
+      description: Update of a measurement value
+      type: object
+      properties:
+        EntityType:
+          description: Numeric representation of site type. 0=Barge, 1=Boat, 2=GreenBox
+          $ref: '#/components/schemas/EntityType'
+        EntityId: 
+          description: Id of the site
+          type: number
+          format: integer
+        MeasurementType:
+          description: Numeric representation of measurement type.
+          $ref: '#/components/schemas/MeasurementType'
+        TimeStamp:
+          description: Timestamp for the updated measurement value
+          type: string
+          format: ISO 8601 UTC
+        Value:
+          description: Updated value
+          type: number
+          format: float
+          nullable: true
+    EntityType:
+      type: number
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+          * 0 - Barge
+
+          * 1 - Boat
+
+          * 2 - GreenBox
+    MeasurementType:
+      type: number
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+      description: >
+          * 0 - LastData
+
+          * 1 - LastIncident
+
+          * 2 - LastMeasurement
+
+          * 3 - Status 
+
+          * 4 - DataStatus 
+
+          * 5 - GeneratorRunningHours1d 
+
+          * 6 - AccumulatedPower1d 
+
+          * 7 - BatteryRunningHours1d 
+
+          * 8 - BusbarApparentPowerTotal - Only on GreenBox sites
+
+          * 9 - EngineFuelFlow - Only on GreenBox sites
+
+          * 10 - EngineAccumulatedCo21d - Only on GreenBox sites
+
+          * 11 - EngineAccumulatedFuelFlow1d - Only on GreenBox sites
+          
+          * 12 - BusbarAccumulatedPower1d - Only on GreenBox sites
+  messages:
+    subscribe:
+      payload: 
+        $ref: '#/components/schemas/SubscriptionDto'
+    unsubscribe:
+      payload: 
+        $ref: '#/components/schemas/SubscriptionDto'
+    updates:
+      payload: 
+        $ref: '#/components/schemas/MeasurementValueDto'
