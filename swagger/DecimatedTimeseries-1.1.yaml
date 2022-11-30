@@ -1,7 +1,8 @@
 openapi: "3.0.2"
 info:
-  title: Fjord Control API - GetDecimatedTimeseries
+  title: Fjord Control API - Analytics/GetDecimatedTimeseries
   version: "1.1"
+  description: Endpoint for retireving downsampled timeseries data within a period of time 
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
