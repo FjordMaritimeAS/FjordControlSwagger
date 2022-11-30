@@ -1,0 +1,172 @@
+openapi: 3.0.0
+info:
+  title: Proposal to Fjord Control api v2 - User logs
+  version: "1.0"
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/TTH_1/UserLogs/1.0
+  - url: https://api.fjordcontrol.no/v2
+paths:
+  /UserLogs/CreateRecord:
+    post:
+      summary: Add a user log record
+      requestBody:
+        description: Record data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogInfo'
+      responses:
+        201:
+          description: Created - Request fullfilled and new user log record is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogRecord'
+        403: 
+          description: Forbidden - Bearer token not approved
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse the user log info.
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /UserLogs/GetRecords:
+    post:
+      summary: Get a set of filtered user logs 
+      requestBody:
+        description: User logs filter
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogFilter'
+      responses:
+        200:
+          description: OK - Request fullfilled and filtered user log recordss are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogRecords'
+        403: 
+          description: Forbidden - Bearer token not approved
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse the user log filter.
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /UserLogs/UpdateRecord:
+    post:
+      summary: Update existing user logs 
+      requestBody:
+        description: Modified user log record
+        required: true
+        content:
+          application/json:
+            schema:
+                $ref: '#/components/schemas/UserLogRecord'
+      responses:
+        204:
+          description: No Content - Update fullfilled, no data returned
+        403: 
+          description: Forbidden - Bearer token not approved
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse the user log filter.
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+components:
+  schemas:
+    UserLogInfo:
+      type: object
+      properties:
+        LogType:
+          $ref: '#/components/schemas/LogType'
+        Comment:
+          $ref: '#/components/schemas/LogComment'
+      required:
+      - LogType
+      - Comment
+    UserLogRecord:
+      type: object
+      properties:
+        UserId:
+          $ref: '#/components/schemas/UserId'
+        Timestamp:
+          $ref: '#/components/schemas/Timestamp'
+        LogType:
+          $ref: '#/components/schemas/LogType'
+        Comment:
+          $ref: '#/components/schemas/LogComment'
+      required:
+      - UserId
+      - Timestamp
+      - LogType
+      - Comment 
+    UserLogRecords:
+      type: object
+      properties:
+        UserIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserId'
+        Timestamps:
+          type: array
+          items:
+            $ref: '#/components/schemas/Timestamp'
+        LogTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogType'
+        Comments:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogComment'
+      required:
+      - UserIds
+      - Timestamps
+      - LogTypes
+      - Comments 
+    UserLogFilter:
+      type: object
+      properties:
+        UserId:
+          $ref: '#/components/schemas/UserId'
+        TimeFrom:
+          description: Inclusive (>=) start time of requested records
+          $ref: '#/components/schemas/Timestamp'
+        TimeTo:
+          description: Inclusive (<=) end time of requested records
+          $ref: '#/components/schemas/Timestamp'
+        LogTypes:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogType'
+      required:
+      - UserId
+      - TimeFrom
+      - TimeTo
+      - LogType
+    LogType:
+      description: Enumerator indicating log type
+      type: number
+      format: int
+      enum:
+      - Comment
+      - OnWatch
+      - OffWatch
+      - OnSite
+      - OffSite
+    LogComment:
+      description: Short text relevant to the log type.
+      type: string
+      format: char(300)
+    Timestamp:
+      description: Timestamp associated with some event or data point
+      type: string
+      format: ISO 8601 UTC
+    UserId:
+      description: Number identifying user.
+      type: number
+      format: int
