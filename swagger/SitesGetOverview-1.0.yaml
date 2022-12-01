@@ -13,7 +13,9 @@ servers:
 paths:
   /Sites/GetOverview:
     get:
-      summary: Get an array of all sites the user has access to
+      summary: Get an array of all sites the user has access to.
+      description: >
+        Get an overview of all sites the user has access to. The access is controlled by user claims set up by admin user.
       responses:
         200:
           description: OK - Request fullfilled and a list of sites are returned
@@ -49,8 +51,9 @@ components:
           description: Name of the site
           type: string
         Type:
-          description: Type of site
-          $ref: '#/components/schemas/EntityType'
+          allOf:
+          - description: Type of site
+          - $ref: '#/components/schemas/EntityType'
     EntityType:
       type: number
       format: byte
