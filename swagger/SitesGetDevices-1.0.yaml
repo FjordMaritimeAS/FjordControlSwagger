@@ -13,7 +13,9 @@ servers:
 paths:
   /Sites/GetDevices/{siteId}:
     get:
-      summary: Get an array of all devices available at the specified site
+      summary: Get an array of all devices available at the specified site.
+      description: >
+        Get an array of all devices available at the specified site. The caller must have access to the site according to user claims.
       parameters:
       - in: path
         name: siteId
