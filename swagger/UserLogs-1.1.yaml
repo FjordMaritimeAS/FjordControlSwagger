@@ -4,9 +4,10 @@ info:
   description: >
     Endpoint for recording and reading changes to personell job status
   version: '1.1'
+paths:
   /UserLogs/CreateRecord:
     post:
-      summary: Add a user log record
+      summary: Add a user log record.
       description: >
         Creates a user record based on UserLogInfo.
         User id is derived from user id in token.
@@ -34,9 +35,11 @@ info:
           description: Internal Server Error - Returns a text string that hints to problem
   /UserLogs/GetRecords:
     post:
-      summary: Get a set of filtered user logs 
+      summary: Get a set of filtered user logs.
+      description: >
+        Get a set of user logs within a time interval with given user id and log types.
       requestBody:
-        description: User logs filter
+        description: User logs filter.
         required: true
         content:
           application/json:
@@ -58,9 +61,11 @@ info:
           description: Internal Server Error - Returns a text string that hints to problem
   /UserLogs/GetLatestRecord:
     post:
-      summary: xxxGet the latest user logs set of filtered user logs 
+      summary: Get the latest user logs set of filtered user logs.
+      description: >
+        Get the latest user logs with given user id and log type.
       requestBody:
-        description: User logs filter
+        description: User logs filter.
         required: true
         content:
           application/json:
