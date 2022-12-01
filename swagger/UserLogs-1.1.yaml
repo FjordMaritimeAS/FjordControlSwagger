@@ -1,17 +1,16 @@
 openapi: 3.0.0
 info:
-  title: Fjord Control API - UserLogs
-  description: Endpoint for recording and reading changes to personell job status
+  title: DRAFT 1.1  *** Fjord Control API - UserLogs
+  description: >
+    Endpoint for recording and reading changes to personell job status
   version: '1.1'
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/TTH_1/UserLogs/1.1
-  - url: https://api.fjordcontrol.no/v2
-paths:
   /UserLogs/CreateRecord:
     post:
       summary: Add a user log record
+      description: >
+        Creates a user record based on UserLogInfo.
+        User id is derived from user id in token.
+        Timestamp is derived from server time when request arrives.
       requestBody:
         description: Record data
         required: true
@@ -36,6 +35,30 @@ paths:
   /UserLogs/GetRecords:
     post:
       summary: Get a set of filtered user logs 
+      requestBody:
+        description: User logs filter
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogFilter'
+      responses:
+        200:
+          description: OK - Request fullfilled and filtered user log recordss are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogRecords'
+        403: 
+          description: Forbidden - Bearer token not approved
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse the user log filter.
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /UserLogs/GetLatestRecord:
+    post:
+      summary: xxxGet the latest user logs set of filtered user logs 
       requestBody:
         description: User logs filter
         required: true
@@ -153,3 +176,7 @@ components:
       description: Number identifying user.
       type: number
       format: int
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/TTH_1/UserLogs/1.1
