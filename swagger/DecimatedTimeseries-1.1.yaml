@@ -11,7 +11,9 @@ servers:
 paths:
   /Analytics/GetDecimatedTimeseries:
     post:
-      summary: Get an array of decimated and sorted data points given temporal constraints and a decimation policy
+      summary: Get decimated data points.
+      description: >
+        Get an array of decimated and sorted data points given temporal constraints and a decimation policy.
       requestBody:
         description: >
           The purpose of this API is to provide timeseries data suitable for displaying as graphs.
