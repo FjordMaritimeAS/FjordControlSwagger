@@ -1,187 +1,360 @@
 openapi: 3.0.0
 info:
-  title: DRAFT 1.1  *** Fjord Control API - UserLogs
+  title: DRAFT 1.1  *** Fjord Control API - User Logs
   description: >
-    Endpoint for recording and reading changes to personell job status
+    User logs is a timeseries of records tracking user precence. Users may be Customer employees, Fjord Control OMS employees, or Fjord Maritime technical personell. The tracked information is:
+     * Timestamp - When the record was added
+     * UserId - The user; owner of the record
+     * Availability - Whether or not user is available for contact
+     * Precence - Whereabouts of the user
+     * Comment - Some text adding context to log entry
+     * Site - Current site location if applicable
+     * Office - Current office location if applicable
   version: '1.1'
 paths:
   /UserLogs/CreateRecord:
     post:
-      summary: Add a user log record.
+      summary: Appends a record to the user log.
       description: >
-        Creates a user record based on UserLogInfo.
-        User id is derived from user id in token.
-        Timestamp is derived from server time when request arrives.
+        Appends a record in the user log.
+         * Timestamp from input record is ignored by the server and can be null. Server will insert timestamp from request arrival time.
+      security:
+        - BearerAuth: []
+        - Claims: [ userlogs_create_owned, userlogs_create_all]
       requestBody:
-        description: Record data
+        description: Data for the log record. Timestamp is omitted.
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserLogInfo'
+                oneOf:
+                - $ref: '#/components/schemas/UserLogRecord'
       responses:
         201:
-          description: Created - Request fullfilled and new user log record is returned
+          description: Created - Request fullfilled and the record is returned with assigned timestamp.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - $ref: '#/components/schemas/UserLogRecord'
+        403: 
+          description: >
+            * Forbidden - Bearer token not approved.
+            * Forbidden - Claims validation failed.
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse incoming record.
+        500:
+          description: >
+            Internal Server Error - Returns a text string that hints to the problem.
+  /UserLogs/GetRecords:
+    post:
+      summary: Returns user logs for specified users within a time window.
+      description: >
+        Returns user logs for specified users within a time window.
+        * Fails if any of the UserId are outside claims. 
+      security:
+        - BearerAuth: []
+        - Claims: [ userlogs_read_owned, userlogs_read_all, userlogs_read_oms, userlogs_read_company ]        
+      requestBody:
+        description: User logs filter.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLogFilter'
+      responses:
+        200:
+          description: OK - Request fullfilled and filtered user log records are returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserLogCollection'
+        403: 
+          description: >
+            * Forbidden - Bearer token not approved.
+            * Forbidden - Claims validation failed.
+        422: 
+          description: >
+            Unprocessable Entity - Failed to parse the user log filter.
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /UserLogs/GetMyLatestRecord:
+    get:
+      summary: >
+        Get the latest logs of the calling user.
+      description: >
+        Get the latest logs of the calling user.
+         * For any user to read latest precence record of herself.
+         * UserId is extracted from bearer token.
+      parameters:
+      - in: header
+        name: token
+        description: Token user id defining owner of log record.
+        required: true
+        schema:
+          type: integer
+      security:
+        - BearerAuth: []
+        - Claims: [ userlogs_read_owned ]
+      responses:
+        200:
+          description: OK - Request fullfilled and filtered user log record is returned
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserLogRecord'
         403: 
-          description: Forbidden - Bearer token not approved
+          description: >
+            * Forbidden - Bearer token not approved.
+            * Forbidden - Claims validation failed.
         422: 
           description: >
-            Unprocessable Entity - Failed to parse the user log info.
+            Unprocessable Entity - Failed to parse the user log filter.
         500:
           description: Internal Server Error - Returns a text string that hints to problem
-  /UserLogs/GetRecords:
-    post:
-      summary: Get a set of filtered user logs.
+  /UserLogs/GetLatestCompanyRecords/{CompanyId}:
+    get:
+      summary: >
+        Get the latest logs of all comppany users.
       description: >
-        Get a set of user logs within a time interval with given user id and log types.
-      requestBody:
-        description: User logs filter.
+        Get the latest logs of all comppany users.
+         * For user to see precence of fellow employees in same company.
+         * For OMS user to see precense of staff in a company.
+      parameters:
+      - in: path
+        name: CompanyId
+        description: Identifier of company which users belong
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLogFilter'
+        schema:
+          type: integer
+      security:
+        - BearerAuth: []
+        - Claims: [ userlogs_read_company, userlogs_read_all ]
       responses:
         200:
           description: OK - Request fullfilled and filtered user log recordss are returned
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserLogRecords'
+                $ref: '#/components/schemas/UserLogCollection'
         403: 
-          description: Forbidden - Bearer token not approved
+          description: >
+            * Forbidden - Bearer token not approved.
+            * Forbidden - Claims validation failed.
         422: 
           description: >
             Unprocessable Entity - Failed to parse the user log filter.
         500:
           description: Internal Server Error - Returns a text string that hints to problem
-  /UserLogs/GetLatestRecord:
-    post:
-      summary: Get the latest user logs set of filtered user logs.
+  /UserLogs/GetLatestOmsRecords:
+    get:
+      summary: >
+        Get the latest logs of all OMS users.
       description: >
-        Get the latest user logs with given user id and log type.
-      requestBody:
-        description: User logs filter.
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UserLogFilter'
+        Get the latest logs of all OMS users.
+         * For user to see precence of OMS staff.
+      security:
+        - BearerAuth: []
+        - Claims: [ userlogs_read_oms ]
       responses:
         200:
           description: OK - Request fullfilled and filtered user log recordss are returned
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UserLogRecords'
+                $ref: '#/components/schemas/UserLogCollection'
         403: 
-          description: Forbidden - Bearer token not approved
+          description: >
+            * Forbidden - Bearer token not approved.
+            * Forbidden - Claims validation failed.
         422: 
           description: >
             Unprocessable Entity - Failed to parse the user log filter.
         500:
-          description: Internal Server Error - Returns a text string that hints to problem
+          description: >
+            Internal Server Error - Returns a text string that hints to problem
 components:
   schemas:
-    UserLogInfo:
-      type: object
-      properties:
-        LogType:
-          $ref: '#/components/schemas/LogType'
-        Comment:
-          $ref: '#/components/schemas/LogComment'
-      required:
-      - LogType
-      - Comment
     UserLogRecord:
+      description: Log record decribing precence of user
       type: object
       properties:
         UserId:
-          $ref: '#/components/schemas/UserId'
+          description: User identifier. Owner of log record.
+          allOf:
+          - $ref: '#/components/schemas/UserId'
         Timestamp:
-          $ref: '#/components/schemas/Timestamp'
-        LogType:
-          $ref: '#/components/schemas/LogType'
+          description: Timestamp created by server
+          allOf:
+          - $ref: '#/components/schemas/Timestamp'
+        Available:
+          description: Flag indicating if user is availabile for communication
+          allOf:
+          - $ref: '#/components/schemas/AvailableValue' 
+        Precence:
+          description: Code indicating type of precence
+          allOf:
+          - $ref: '#/components/schemas/PrecenceValue'
         Comment:
-          $ref: '#/components/schemas/LogComment'
+          description: Comment giving context to log entry
+          allOf:
+          - $ref: '#/components/schemas/CommentValue'
+        Location:
+          description: Identifier of site or office
+          allOf:
+          - $ref: '#/components/schemas/LocationValue'
+        LocationType:
+          description: Code indicating location type; site or office
+          allOf:
+          - $ref: '#/components/schemas/LocationTypeValue'
       required:
       - UserId
       - Timestamp
-      - LogType
-      - Comment 
-    UserLogRecords:
+      - Available
+      - Precence
+      - Comment
+      - Location
+      - LocationType
+    UserLogCollection:
       type: object
+      description: >
+        Response from request asking for log records
       properties:
         UserIds:
+          description: User ids for each log record
           type: array
-          items:
+          items: 
             $ref: '#/components/schemas/UserId'
         Timestamps:
           type: array
-          items:
+          description: Timestamps for each log record
+          items: 
             $ref: '#/components/schemas/Timestamp'
-        LogTypes:
+        Availables:
+          description: Availability status for each log record
+          type: array
+          items: 
+            $ref: '#/components/schemas/AvailableValue'
+        Precences:
+          description: Precence status for each log record
           type: array
           items:
-            $ref: '#/components/schemas/LogType'
+            $ref: '#/components/schemas/PrecenceValue'
         Comments:
+          description: Comments for each log record
           type: array
           items:
-            $ref: '#/components/schemas/LogComment'
+            $ref: '#/components/schemas/CommentValue'
+        Locations:
+          description: Locations for each log record
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationValue'
+        LocationTypes:
+          description: Location types for each log record
+          type: array
+          items:
+            $ref: '#/components/schemas/LocationTypeValue'
       required:
       - UserIds
       - Timestamps
-      - LogTypes
-      - Comments 
+      - Availables
+      - Precences
+      - Comments
+      - Locations
+      - LocationTypes
     UserLogFilter:
       type: object
       properties:
-        UserId:
-          $ref: '#/components/schemas/UserId'
-        TimeFrom:
-          allOf:
-          - description: Inclusive (>=) start time of requested records
-          - $ref: '#/components/schemas/Timestamp'
-        TimeTo:
-          allOf:
-          - description: Inclusive (<=) end time of requested records
-          - $ref: '#/components/schemas/Timestamp'
-        LogTypes:
+        UserIds:
+          description: A set of user ids for which to return logs
           type: array
           items:
-            $ref: '#/components/schemas/LogType'
+            $ref: '#/components/schemas/UserId'
+        TimeFrom:
+          description: Inclusive (>=) start time of requested records
+          allOf:
+          - $ref: '#/components/schemas/Timestamp'
+        TimeTo:
+          description: Inclusive (<=) end time of requested records
+          allOf:
+          - $ref: '#/components/schemas/Timestamp'
       required:
-      - UserId
+      - UserIds
       - TimeFrom
       - TimeTo
-      - LogType
-    LogType:
-      description: >
-        Enumerator indicating log type
-        `0: Comment`
-        `1: OnWatch`
-        `2: OffWatch`
-        `3: OnSite`
-        `4: OffSite`
-      type: number
-      format: int
-    LogComment:
-      description: Short text relevant to the log type.
-      type: string
-      format: char(300)
-    Timestamp:
-      description: Timestamp associated with some event or data point
-      type: string
-      format: ISO 8601 UTC
     UserId:
       description: Number identifying user.
       type: number
       format: int
-servers:
-  # Added by API Auto Mocking Plugin
-  - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/TTH_1/UserLogs/1.1
+    Timestamp:
+      description: Timestamp associated with some event or data point
+      type: string
+      format: ISO 8601 UTC
+    AvailableValue:
+      description: >
+        Boolean indication availability for contact
+         * `true` - Is available for contact
+         * `false` - Is not avaliable for contact.
+      type: boolean
+    PrecenceValue:
+      description: >
+        Enumerator indicating precense
+         * `0: Absent`
+         * `1: Present`
+         * `2: Remote`
+         * `3: Vacation`
+         * `4: Sick`
+         * `5: OnLeave`
+      type: number
+      format: int
+    CommentValue:
+      description: Short comment text.
+      type: string
+      format: char(300)      
+    LocationValue:
+      description: >
+        Identifier of current location. One of:
+         * Entity id
+         * Office id (for future use)
+      type: number
+      format: int
+    LocationTypeValue:
+      description: >
+        Type identifier indicating if location is site or office. One of:
+         * `0 - Entity`
+         * `1 - Office` (for future use)
+      type: number
+      format: int
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+    Claims:
+      type: oauth2
+      description: >
+        Fake oauth2 specification used to model expected Fjord Control authorization.
+      flows:
+        authorizationCode:
+          authorizationUrl: fake.spec
+          tokenUrl: fake.spec
+          scopes:
+            userlogs_append_owned: >
+              Grants access to append records, if:
+               * Log UserId matches token user id.
+            userlogs_append_any: >
+              Grants access to append records, if:
+               * Token user id is member of group "FjordControlOMS".
+            userlogs_read_owned: >
+              Grants access to read records, if
+               * Log UserId matches token user id.
+            userlogs_read_company: >
+              Grants access to read records, if
+               * Log UserId is in same company as token user id.
+            userlogs_read_oms: >
+              Grants read access to records, if:
+               * UserId in log is meber of group "FjordControlOMS".
+            userlogs_read_all: >
+              Grants read access to records, if:
+               * Token user id is meber of group "FjordControlOMS".
