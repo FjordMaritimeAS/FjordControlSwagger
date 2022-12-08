@@ -31,7 +31,7 @@ components:
           description: Specification for the subscription. format - '{DeviceTypeNo}/{DeviceId}/{MeasurementId}'
           type: string
         ByType:
-          description: Get measurement by type. Set to true if MeasurementId on Measurement object is null.
+          description: Always false (Not in use)
           type: boolean
     MeasurementValueDto:
       description: Update of a measurement value
