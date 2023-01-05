@@ -13,7 +13,9 @@ servers:
 paths:
   /Sites/GetDevices/{siteId}:
     get:
-      summary: Get an array of all devices available at the specified site
+      summary: Get an array of all devices available at the specified site.
+      description: >
+        Get an array of all devices available at the specified site. The caller must have access to the site according to user claims.
       parameters:
       - in: path
         name: siteId
@@ -72,7 +74,6 @@ components:
           description: Measurement Id
           type: number
           format: int
-          nullable: true
         Name:
           description: Name of measurement
           type: string
@@ -101,54 +102,7 @@ components:
           description: The precision of the measurement value ex. 0.1 => 1 decimal
           type: number
           format: float
-    DataType:
-      type: number
-      format: byte
-      enum:
-        - 0
-        - 1
-        - 2
-        - 3
-        - 4
-        - 5
-        - 6
-        - 7
-        - 8
-        - 9
-      description: >
-          * 0 - Boolean
-
-          * 1 - Integer
-
-          * 2 - Decimal
-
-          * 3 - String 
-
-          * 4 - OperatingMode (See spec) 
-
-          * 5 - OperationalMode (See spec)  
-
-          * 6 - KeySwitchPosition (See spec) 
-
-          * 7 - EngineStatus (See spec) 
-
-          * 8 - BatteryStatus (See spec) 
-
-          * 9 - GeneratorStatus (See spec) 
     OperatingMode:
-      type: number
-      format: byte
-      enum:
-        - 0
-        - 1
-        - 2
-      description: >
-          * 0 - Auto
-
-          * 1 - Manual
-
-          * 2 - Stop
-    OperationalMode:
       type: number
       format: byte
       enum:
@@ -174,6 +128,40 @@ components:
           * 1 - Intermediate
 
           * 2 - Manual
+    DataType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+      description: >
+          * 0 - Boolean
+
+          * 1 - Integer
+
+          * 2 - Decimal
+
+          * 3 - String 
+
+          * 4 - OperatingMode (See spec) 
+
+          * 5 - OperationalMode => Same as OperatingMode 
+
+          * 6 - KeySwitchPosition (See spec) 
+
+          * 7 - EngineStatus (See spec) 
+
+          * 8 - BatteryStatus (See spec) 
+
+          * 9 - GeneratorStatus (See spec) 
     EngineStatus:
       type: number
       format: byte
@@ -279,7 +267,7 @@ components:
         - 15
         - 16
       description: >
-        * 0 - Battery
+        * 0 - Battery => See BatteryMeasurementType
 
         * 1 - Engine
 
@@ -312,3 +300,115 @@ components:
         * 15 - Maneuver
           
         * 16 - Busbar
+    BatteryMeasurementType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+      description: >
+        * 0 - StateOfCharge - %
+
+        * 1 - BattStackCurrent - A
+
+        * 2 - Status - string - See BatteryStatus enum
+
+        * 3 - RunningHours1d - hours 
+
+        * 4 - Temperature - deg. C
+
+        * 5 - StateOfHeatlh - %
+
+        * 6 - Voltage - V
+
+        * 7 - ChargeSpeed - ?
+    BatteryStatus:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+        * 0 - 'Idle'
+
+        * 1 - 'Charging'
+
+        * 2 - 'Discharging'
+    GeneratorMeasurementType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+      description: >
+        * 0 - ApparentPowerTotal - kVA
+
+        * 1 - Status - string => see GeneratorStatus enum
+
+        * 2 - AccumulatedApparentPower - kVAh
+
+        * 3 - AccumulatedApparentPower1d - kVAh
+
+        * 4 - ActivePowerTotal - kW
+
+        * 5 - ReactivePowerTotal - kVAr
+
+        * 6 - Frequency - Hz
+    EngineMeasurementType:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+        - 3
+        - 4
+        - 5
+        - 6
+        - 7
+        - 8
+        - 9
+        - 10
+        - 11
+        - 12
+        - 13
+      description: >
+        * 0 - Status - string => see EngineStatus enum
+
+        * 1 - RunningHours - hours
+
+        * 2 - RunningHours1d - hours
+
+        * 3 - Power - kWm
+
+        * 4 - AveragePower - kWm
+
+        * 5 - RPM - rpm
+
+        * 6 - AverageRpm - rpm
+
+        * 7 - Temperature - deg.C
+
+        * 8 - OilPressure - bar
+
+        * 9 - AccumulatedFuelFlow - liters
+          
+        * 10 - AccumulatedFuelFlow1d - liters
+          
+        * 11 - AccumulatedCo2 - kg
+          
+        * 12 - AccumulatedCo21d - kg
+          
+        * 13 - FuelFlow - liter/hour

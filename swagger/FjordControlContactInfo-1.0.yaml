@@ -1,0 +1,167 @@
+openapi: 3.0.0
+info:
+  version: '1.0'
+  title: Contact info controller
+  description: Endpoint for user contact info
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/TTH_1/FjordControlContactInfo/1.0
+  - description: Fjord Control production API
+    url: https://api.fjordcontrol.com/v2
+
+paths:
+  /Contact/MyProfile:
+    get:
+      summary: Gets the logged in user's own contact info.
+      description: >
+        Gets the logged in user's own contact info.
+      responses:
+        200:
+          description: Ok - Contact info for the logged in user is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MyProfileInfo'
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+    put:
+      summary: Lets the user update their profile info.
+      description: >
+        Updates the preferred language and job title of the logged in user.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInfo'
+      responses:
+        200:
+          description: Ok - Contact info was successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateInfo'
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /Contact/MyContacts:
+    get:
+      summary: Get a list of users in the user's company.
+      description: >
+        Get a list of users in the user's company. The user's own contact info should not be included in the list.
+      responses:
+        200:
+          description: Ok - contact info is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactInfoList'
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+  /Contact/MyContacts/{siteId}:
+    get:
+      summary: Get a list of users on the specified site.
+      description: >
+        Get a list of users that's registered to work at the specified site. The user's own contact info should not be included in the list.
+      parameters:
+      - in: path
+        name: siteId
+        schema:
+          type: integer
+        required: true
+        description: The id of the site to list devices for
+      responses:
+        200:
+          description: Ok - contact info is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactInfoList'
+  /Contact/MyContacts/Support:
+    get:
+      summary: Get a list of users in Fjord Maritime OMS department.
+      description: >
+        Get a list of users in Fjord Maritime OMS department.
+      responses:
+        200:
+          description: Ok - contact info is returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContactInfoList'
+        403:
+          description: Forbidden
+        500:
+          description: Internal Server Error - Returns a text string that hints to problem
+components:
+  schemas:
+    ContactInfoList:
+      description: A list of contacts.
+      type: object
+      properties:
+        Contacts:
+          description: Contact info for a user.
+          type: array
+          items:
+            $ref: '#/components/schemas/ContactListInfo'
+    UpdateInfo:
+      description: Model to update the user's profile info
+      type: object
+      properties:
+        LanguagePreference:
+            $ref: '#/components/schemas/LanguageEnum'
+        JobTitle:
+          type: string
+    ContactInfo:
+      description: An object containing information about a user
+      type: object
+      properties:
+        Name:
+          description: Name of the contact
+          type: string
+        Email:
+          description: Email of the contact
+          type: string
+        PhoneNumber:
+          description: Phone number for the user
+          type: string
+        JobTitle:
+          description: Job title of the contact
+          type: string
+    MyProfileInfo:
+      allOf:
+        - $ref: '#/components/schemas/ContactInfo'
+        - type: object
+          properties:
+            LanguagePreference:
+              $ref: '#/components/schemas/LanguageEnum'
+    ContactListInfo:
+      allOf:
+        - $ref: '#/components/schemas/ContactInfo'
+        - type: object
+          properties:
+            AvailableForContact:
+              type: boolean
+              description: >
+                Boolean indication availability for contact
+                `true` - Is available for contact
+                `false` - Is not avaliable for contact.
+    LanguageEnum:
+      type: number
+      format: byte
+      enum:
+        - 0
+        - 1
+        - 2
+      description: >
+        * 0 - Norwegian
+        
+        * 1 - English
+        
+        * 2 - Spanish

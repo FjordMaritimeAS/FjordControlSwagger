@@ -1,12 +1,12 @@
 openapi: "3.0.2"
 info:
   title: Fjord Control API - Analytics/GetDecimatedTimeseries
-  version: "1.1"
+  version: '1.2'
   description: Endpoint for retireving downsampled timeseries data within a period of time 
 servers:
   # Added by API Auto Mocking Plugin
   - description: SwaggerHub API Auto Mocking
-    url: https://virtserver.swaggerhub.com/TTH_1/DecimatedTimeSeries/1.1
+    url: https://virtserver.swaggerhub.com/TTH_1/DecimatedTimeSeries/1.2
   - url: https://api.fjordcontrol.no/v2
 paths:
   /Analytics/GetDecimatedTimeseries:
@@ -206,12 +206,9 @@ components:
           format: short
         DeviceType:
           $ref: '#/components/schemas/DeviceType'
-        MeasurementType:
-          description: >
-            Enumeration identifying measurement type specific for given DeviceType.
-            Thus, there exists one enumeration table for each DeviceType
+        MeasurementId:
+          description: Identifier of measurement.
           type: number
-          format: byte
         DecimationPolicy:
           description: >
             1. How to sample measurements for each time slot:
@@ -230,5 +227,5 @@ components:
       required:
       - DeviceId
       - DeviceType
-      - MeasurementType
+      - MeasurementId
       - DecimationPolicy
