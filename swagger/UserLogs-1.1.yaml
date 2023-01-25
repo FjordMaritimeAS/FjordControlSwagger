@@ -1,6 +1,6 @@
 openapi: 3.0.0
 info:
-  title: DRAFT 1.1  *** Fjord Control API - User Logs
+  title: DRAFT 1.1  *** Fjord Control - User Logs
   description: >
     User logs is a timeseries of records tracking user presence. Users may be Customer employees, Fjord Control OMS employees, or Fjord Maritime technical personell. The tracked information is:
      * Timestamp - When the record was added
