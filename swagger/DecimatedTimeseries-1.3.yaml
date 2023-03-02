@@ -213,10 +213,11 @@ components:
           description: >
             1. How to sample measurements for each time slot:
              * No value is selected if no value exists within the time slot
-             * `0: min` - Select minimum value within time slot
-             * `1: max` - Select maximum value within time slot
-             * `2: mean` - Calculate mean value within time slot
-             * `3: extr` - Select both minimum and maximum (extremals) within time slots, if they exist.
+             * `0: min` - Select minimum value within time slot.
+             * `1: max` - Select maximum value within time slot.
+             * `2: mean` - Calculate mean value within time slot. Returns averaged timestamp for values in mean.
+             * `3: extr` - Select both minimum and maximum (extremals) within each time slot, if they exist. 
+             * `4: meanL` - Select both mean value and (L)ast value within each timeslot, if they exist. Mean value excludes the last point seen in the time slot. Returns averaged timestamp for values in mean and exact timestamp for last value.
              2. In addition to data decimated from time slots, 
              select a "leading" data point which is the last data point before the time window.
              3. When the data stream is sparse, 
