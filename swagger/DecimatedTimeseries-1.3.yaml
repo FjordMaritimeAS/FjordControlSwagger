@@ -16,15 +16,24 @@ paths:
         Get an array of decimated and sorted data points given temporal constraints and a decimation policy.
       requestBody:
         description: >
-          The purpose of this API is to provide timeseries data suitable for displaying as graphs.
+          ### Purpose
+          
+          Given a pixelspace on a user device,
+          a frontend developers must be able to ask for a decimated (downsampled) set of data points
+          with the purpose of renderering a timeseries graph that makes good use of the available pixel space.
 
-          Given a pixelspace on the user device
-          the frontend developers must be able to ask for a decimated (or downsampled) set of data points
-          with the purpose of renderering a timesires graph that makes good use of the available pixel space.
-
-          The service providing the decimated data may adjust the request parameters for computational preferences.
-          Repetitive requests with the same request parameters must yield the same result.
-          Results must not be biased to any given time zone.
+          ### Glossary
+           * *Time Window* - Time interval that include the bulk of requested measurement data.
+           * *Time Slot* - Time windows are sub-divided into time slots of equal time durations.
+           * *Raw data point* - Unprocessed data point read from the database.
+           * *Leading value* - Value of last seen raw data point before a given time interval. The time interval may be a time window or a time slot. Leading values do not always exist in the data sets. Not all decimation policies make use of leading values.
+           * *Last value* - Often used to describe the last raw data point in a time slot. Last value can become leading value in the next time slot. Last value for a time slot does not exist if the time slot has no raw data points.
+           * *Decimation policy* - Algorithm that downsamples raw data to a single or a few data points. Simple decimation policies are generally applied on each time slot in isolation. Advanced decimation policy may require leading values.
+           
+          ### General policies
+           * The service providing the decimated data may adjust the request parameters for computational preferences.
+           * Repetitive requests with the same request parameters must yield the same result.
+           * Results must not be biased to any given time zone.
         required: true
         content:
           application/json:
@@ -211,18 +220,34 @@ components:
           type: number
         DecimationPolicy:
           description: >
-            1. How to sample measurements for each time slot:
-             * No value is selected if no value exists within the time slot
-             * `0: min` - Select minimum value within time slot.
-             * `1: max` - Select maximum value within time slot.
-             * `2: mean` - Calculate mean value within time slot. Returns averaged timestamp for values in mean.
-             * `3: extr` - Select both minimum and maximum (extremals) within each time slot, if they exist. 
-             * `4: meanL` - Select both mean value and (L)ast value within each timeslot, if they exist. Mean value excludes the last point seen in the time slot. Returns averaged timestamp for values in mean and exact timestamp for last value.
-             2. In addition to data decimated from time slots, 
-             select a "leading" data point which is the last data point before the time window.
-             3. When the data stream is sparse, 
-             leading data point might not exist or there might be time slots without data.
-             That is ok. The output of the decimation algorithm should be reduced accordingly.
+            ### Purpose
+            
+            Decimation policies define how values are sampled from the time window and time slots.
+            
+            ### General policies
+             * Returned data points are always sorted by time.
+             * Leading value before time window is always returned, if it exists.
+             * No time slot value is computed or selected if no value exists within the time slot.
+             * All returned values are accompanied with a computed or selected timestamp.
+             * Leading values are used in some policies but not all. The policies must be flexible enought to handle absent leading values.
+             
+            ### Specific policies
+             * `0: min` - Selects minimum value within time slot. 
+             * `1: max` - Selects maximum value within time slot.
+             * `2: mean` - Calculates mean value from all values within time slot. Does not include leading values.
+             * `3: extr` - Selects minimum and maximum values (extremals) within each time slot. In general two values are returned. Less if raw data do not exists.
+             * `4: wmeanl` - Calculates (W)eighted mean and selects (L)ast value within each timeslot. In general two values are returned. Less if raw data do not exists.
+               * Weighted mean value is calulated from weighted values of current time slot.
+               * If leading value exists, it is weighted and included in the weighted mean.
+               * Leading value is assigned a timestamp equal to the start time of the current time slot.
+               * Normalized duration (nd) of a raw value is the lifetime of the raw value (vd) divided by duration of the time slot (sd). I.e: nd[s][i] = vd[s][i] / sd[s].
+               * A weighted value (wv) is the raw value (rv) multiplied by its normalized duration (nd). I.e: wv[s][i] = rv[s][i] * nd[s][i].
+               * Weighted mean (wm) is the sum of weighted values within the timeslot. In other words, the dot product between raw values (rv) and their normalized time durations (nd). I.e. wm[s] = sum(wv[s]) = dot(rv[s], nd[s])
+               * Offset timestamp (ot) is the timestamp of the raw value (vt) minus the start time of the time slot (st). I.e: ot[s][i] = vt[s][i] - st[s].
+               * Weighted offset timestamp (wot) is the offset timestamp (ot) divided by the number of raw values (n) in the time slot. I.e: wot[s][i] = ot[s][i] / n[s]
+               * Weighted timestamp (wt) is the calculated timestamp of the weighted mean. It is the start time of the current slot (st) plus the sum of weighted offset timestamps (wot). In other words, it is the start time of the current time slot plus the mean of offset timestamps. I.e: wt[s] = st[s] + sum(wot[s]) = st[s] + mean(ot[s]) = st[s] + sum(ot[s])/n[s].  
+               * Weighted timestamp of weighted mean is assigned timestamp 
+
           type: number
           format: int
       required:
