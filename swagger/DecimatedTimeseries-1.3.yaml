@@ -235,18 +235,22 @@ components:
              * `0: min` - Selects minimum value within time slot. 
              * `1: max` - Selects maximum value within time slot.
              * `2: mean` - Calculates mean value from all values within time slot. Does not include leading values.
-             * `3: extr` - Selects minimum and maximum values (extremals) within each time slot. In general two values are returned. Less if raw data do not exists.
-             * `4: wmeanl` - Calculates (W)eighted mean and selects (L)ast value within each timeslot. In general two values are returned. Less if raw data do not exists.
-               * Weighted mean value is calulated from weighted values of current time slot.
-               * If leading value exists, it is weighted and included in the weighted mean.
-               * Leading value is assigned a timestamp equal to the start time of the current time slot.
-               * Normalized duration (nd) of a raw value is the lifetime of the raw value (vd) divided by duration of the time slot (sd). I.e: nd[s][i] = vd[s][i] / sd[s].
-               * A weighted value (wv) is the raw value (rv) multiplied by its normalized duration (nd). I.e: wv[s][i] = rv[s][i] * nd[s][i].
-               * Weighted mean (wm) is the sum of weighted values within the timeslot. In other words, the dot product between raw values (rv) and their normalized time durations (nd). I.e. wm[s] = sum(wv[s]) = dot(rv[s], nd[s])
-               * Offset timestamp (ot) is the timestamp of the raw value (vt) minus the start time of the time slot (st). I.e: ot[s][i] = vt[s][i] - st[s].
-               * Weighted offset timestamp (wot) is the offset timestamp (ot) divided by the number of raw values (n) in the time slot. I.e: wot[s][i] = ot[s][i] / n[s]
-               * Weighted timestamp (wt) is the calculated timestamp of the weighted mean. It is the start time of the current slot (st) plus the sum of weighted offset timestamps (wot). In other words, it is the start time of the current time slot plus the mean of offset timestamps. I.e: wt[s] = st[s] + sum(wot[s]) = st[s] + mean(ot[s]) = st[s] + sum(ot[s])/n[s].  
-               * Weighted timestamp of weighted mean is assigned timestamp 
+             * `3: extr` - Selects minimum and maximum values (extremals) within each time slot. In general two values are returned for each time slot. Less if raw data do not exists.
+             * `4: last` - Selects last datapoint within time slot.
+             * `5: umeanl` - Returns merged values from `mean` and `last` policies but removes data points with duplicate timestamps (unique). 
+             
+             ### Rules for `mean`
+              Returns mean value for all values within time slot.
+               * Returns mean timestamp for all timestamps within time slot.
+               * Returns existing value and timestamp when only one point exist in the time slot.
+               * Returns no data point when the time slot is empty.
+               
+             ### Rules umeanl
+             Returns unique merge of data points from `main` and `last` policies.
+               * Generally returns 2 data points for each timeslot. That is the mean data point and the last data point for each time slot.
+               * Returns only existing data point when only one data point exist in the time slot. This rule ensures that only unique data points are returned from the merge. The assumption here is that the `mean` policy will return data points identical to `last` policy for time slots with only one value.
+               * Returns no data points when the time slot is empty.
+                
 
           type: number
           format: int
