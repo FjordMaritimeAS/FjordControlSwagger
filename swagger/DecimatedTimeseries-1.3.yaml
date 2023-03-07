@@ -245,7 +245,7 @@ components:
              ### Rules for `mean`
               Returns mean value for all values within time slot.
                * Returns mean timestamp for all timestamps within time slot.
-               * Returns existing value and timestamp when only one point exist in the time slot.
+               * Returns existing value and timestamp when only one data point exist in the time slot.
                * Returns no data point when the time slot is empty.
                
              ### Rules umeanl
