@@ -29,11 +29,6 @@ paths:
            * *Leading value* - Value of last seen raw data point before a given time interval. The time interval may be a time window or a time slot. Leading values do not always exist in the data sets. Not all decimation policies make use of leading values.
            * *Last value* - Often used to describe the last raw data point in a time slot. Last value can become leading value in the next time slot. Last value for a time slot does not exist if the time slot has no raw data points.
            * *Decimation policy* - Algorithm that downsamples raw data to a single or a few data points. Simple decimation policies are generally applied on each time slot in isolation. Advanced decimation policy may require leading values.
-           
-          ### General policies
-           * The service providing the decimated data may adjust the request parameters for computational preferences.
-           * Repetitive requests with the same request parameters must yield the same result.
-           * Results must not be biased to any given time zone.
         required: true
         content:
           application/json:
@@ -49,13 +44,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/DecimatedTimeseries'
         403: 
-          description: Forbidden - Bearer token not approved (TODO - Is this true? Check with FC.)
+          description: >
+            Forbidden - May be caused by
+             * Bearer token not approved.
+             * Request exceeds allowed limit of `4000` data points for any one array.
         422: 
           description: >
             Unprocessable Entity - Failed to process at least one of the timeseries filters.
             Returns a text string that hints to the problem.
         500:
-          description: Internal Server Error - Returns a text string that hints to problem
+          description: >
+            Internal Server Error - Returns a text string that hints to problem
 components:
   schemas:
     Timestamp:
@@ -225,11 +224,15 @@ components:
             Decimation policies define how values are sampled from the time window and time slots.
             
             ### General policies
+             * The service providing the decimated data may adjust the request parameters for computational preferences.
+             * Repetitive requests with the same request parameters must yield the same result.
+             * Results must not be biased to any given time zone. 
              * Returned data points are always sorted by time.
              * Leading value before time window is always returned, if it exists.
              * No time slot value is computed or selected if no value exists within the time slot.
              * All returned values are accompanied with a computed or selected timestamp.
              * Leading values are used in some policies but not all. The policies must be flexible enought to handle absent leading values.
+             * The request will be rejected if it is estimated that number of returned data points for any policy, will exceed allowed limit (se error code 403 above).
              
             ### Specific policies
              * `0: min` - Selects minimum value within time slot. 
