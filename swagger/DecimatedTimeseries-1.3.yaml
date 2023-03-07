@@ -1,6 +1,6 @@
 openapi: "3.0.2"
 info:
-  title: DRAFT Fjord Control API - Analytics/GetDecimatedTimeseries
+  title: Fjord Control API - Analytics/GetDecimatedTimeseries
   version: '1.3'
   description: Endpoint for retireving downsampled timeseries data within a period of time 
 servers:
@@ -18,9 +18,9 @@ paths:
         description: >
           ### Purpose
           
-          Given a pixelspace on a user device,
+          Given a pixel space on a user device,
           a frontend developers must be able to ask for a decimated (downsampled) set of data points
-          with the purpose of renderering a timeseries graph that makes good use of the available pixel space.
+          with the purpose of rendering a timeseries graph that makes good use of the available pixel space.
 
           ### Glossary
            * *Time Window* - Time interval that include the bulk of requested measurement data.
@@ -47,7 +47,7 @@ paths:
           description: >
             Forbidden - May be caused by
              * Bearer token not approved.
-             * Request exceeds allowed limit of `4000` data points for any one array.
+             * Result exceeds allowed limit of `4000` data points for any requested decimation policy.
         422: 
           description: >
             Unprocessable Entity - Failed to process at least one of the timeseries filters.
