@@ -237,10 +237,11 @@ components:
             ### Specific policies
              * `0: min` - Selects minimum value within time slot. 
              * `1: max` - Selects maximum value within time slot.
-             * `2: mean` - Calculates mean value from all values within time slot. Does not include leading values.
+             * `2: umeanl` - Returns merged values from `mean` and `last` policies but removes data points with duplicate timestamps (unique).             
              * `3: extr` - Selects minimum and maximum values (extremals) within each time slot. In general two values are returned for each time slot. Less if raw data do not exists.
              * `4: last` - Selects last datapoint within time slot.
-             * `5: umeanl` - Returns merged values from `mean` and `last` policies but removes data points with duplicate timestamps (unique). 
+             * `5: mean` - Calculates mean value from all values within time slot. Does not include leading values.
+
              
              ### Rules for `mean`
               Returns mean value for all values within time slot.
